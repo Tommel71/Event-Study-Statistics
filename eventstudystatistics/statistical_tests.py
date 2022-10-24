@@ -131,13 +131,25 @@ def adjBMP_daily(AR, eps, R_market_estimation_window, R_market_event_window, t, 
     return result
 
 def z_BMP_new(AR_, eps, R_market_estimation_window, R_market_event_window, CAR_period, adjustment=True):
+
+
+    N = AR_.shape[0]
     AR = AR_.copy()[:, CAR_period[0]:(CAR_period[1] + 1)]
-    # TODO CONTINUE HERE
-    CAR = AR_.cumsum(axis=1)
+    M1 = (~np.isnan(R_market_estimation_window)).sum(axis=1)
+    M2 = (~np.isnan(R_market_event_window)).sum(axis=1)
+
+    CAR = AR.sum(axis=1)
+    events = range(N)
+    s_sq_AR = [calc_sigma_sq_AR_i(eps[i], M1[i]) for i in events]
+    num = ((R_market_event_window.transpose() - R_market_estimation_window.mean()).transpose().sum(axis=1))**2
+    denom = (((R_market_estimation_window.transpose() - R_market_estimation_window.mean(axis=1)).transpose())**2).sum(axis=1)
+    S_CAR = np.asarray([(s_sq_AR[i]*(M2[i] + M2[i]**2/M1[i] + num[i]/denom[i]))**(1/2) for i in events])
+
     SCAR = CAR/S_CAR
     SCAR_bar = SCAR.mean()
     S_CAR_bar = SCAR.std(ddof=1)
     z_BMP = N**(1/2)*SCAR_bar/S_CAR_bar
+    return TestResults(z_BMP, scipy.stats.norm.sf(abs(z_BMP))*2)
 
 def adjBMP(AR_, eps, R_market_estimation_window, R_market_event_window, CAR_period, adjustment=True):
     # + because we let the user do [0,40] to get [0,40] and not [0,41], as this is python specific?

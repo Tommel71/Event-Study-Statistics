@@ -69,7 +69,7 @@ adjBMP_results = []
 grank_results = []
 
 np.random.seed(3)
-J = 10000
+J = 5000
 
 for j in range(J):
     print(j)
@@ -94,11 +94,11 @@ for j in range(J):
     AR = np.asarray(AR_)
     eps = np.asarray(eps_)
 
-    #test_res = z_BMP_new(AR, eps, estimation_window_market_return, event_window_market_return, CAR_period, adjustment=False)
-    #adjBMP_results.append(test_res)
+    test_res = z_BMP_new(AR, eps, estimation_window_market_return, event_window_market_return, CAR_period, adjustment=False)
+    adjBMP_results.append(test_res)
 
-    test_res_daily = z_BMP_new(AR, eps, estimation_window_market_return, event_window_market_return, event_day, adjustment=False)
-    adjBMP_results.append(test_res_daily)
+    #test_res_daily = adjBMP_daily(AR, eps, estimation_window_market_return, event_window_market_return, event_day, adjustment=False)
+    #adjBMP_results.append(test_res_daily)
 
     #test_res2 = grank(AR, eps, estimation_window_market_return, event_window_market_return, event_day, CAR_period)
     #grank_results.append(test_res2)
