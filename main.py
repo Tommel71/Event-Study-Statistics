@@ -20,6 +20,14 @@ def calculate_coefficients(X,Y):
     return beta[0], beta[1], eps
 
 
+# load pickle file from tests
+with open("tests/params_adjbmp_grank.pkl", "rb") as f:
+    params = pickle.load(f)
+
+test1 = grank(*params)
+test2 = adjBMP(*params)
+
+
 
 CAR_period = [0, 40]  # including both edges, CAREFUL, this is not like python indexing, this is including the right side.
 n_events = 120
@@ -59,8 +67,6 @@ print(test_res)
 
 test_res2 = grank(AR, eps, estimation_window_market_return, event_window_market_return, CAR_period)
 print(test_res2)
-
-
 
 ### SIMULATION:
 
