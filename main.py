@@ -3,7 +3,7 @@ from scipy.stats import t
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 import numpy as np
-from eventstudystatistics import adjBMP, adjBMP_daily, grank, z_BMP_new
+from eventstudystatistics import adjBMP, adjBMP_daily, grank
 
 def calculate_coefficients(X,Y):
     # implement ordinary least squares in numpy
@@ -57,7 +57,7 @@ print(test_res)
 test_res = adjBMP(AR, eps, estimation_window_market_return, event_window_market_return, CAR_period)
 print(test_res)
 
-test_res2 = grank(AR, eps, estimation_window_market_return, event_window_market_return, event_day, CAR_period)
+test_res2 = grank(AR, eps, estimation_window_market_return, event_window_market_return, CAR_period)
 print(test_res2)
 
 
@@ -94,14 +94,14 @@ for j in range(J):
     AR = np.asarray(AR_)
     eps = np.asarray(eps_)
 
-    test_res = z_BMP_new(AR, eps, estimation_window_market_return, event_window_market_return, CAR_period, adjustment=False)
-    adjBMP_results.append(test_res)
+    #test_res = adjBMP(AR, eps, estimation_window_market_return, event_window_market_return, CAR_period, adjustment=False)
+    #adjBMP_results.append(test_res)
 
     #test_res_daily = adjBMP_daily(AR, eps, estimation_window_market_return, event_window_market_return, event_day, adjustment=False)
     #adjBMP_results.append(test_res_daily)
 
-    #test_res2 = grank(AR, eps, estimation_window_market_return, event_window_market_return, event_day, CAR_period)
-    #grank_results.append(test_res2)
+    test_res2 = grank(AR, eps, estimation_window_market_return, event_window_market_return, CAR_period, True)
+    grank_results.append(test_res2)
 
 
 

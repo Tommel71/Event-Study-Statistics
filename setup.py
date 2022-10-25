@@ -5,15 +5,15 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name="safeworder",
+    name="eventstudystatistics",
     version="1.0.2",
-    description="Replace dirty strings with clean ones",
+    description="statistics for event studies",
     license='MIT',
     author="Tommel",
     package_data={
-      'safeworder': ['*'],
+      'eventstudystatistics': ['*'],
     },
-    url="https://github.com/Tommel71/safeworder",
+    url="https://github.com/Tommel71/event-study-statistics",
     zip_safe=False,
     include_package_data=True,
     packages=find_packages(),

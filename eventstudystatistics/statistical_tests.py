@@ -130,7 +130,7 @@ def adjBMP_daily(AR, eps, R_market_estimation_window, R_market_event_window, t, 
 
     return result
 
-def z_BMP_new(AR_, eps, R_market_estimation_window, R_market_event_window, CAR_period, adjustment=True):
+def adjBMP(AR_, eps, R_market_estimation_window, R_market_event_window, CAR_period, adjustment=True):
 
 
     N = AR_.shape[0]
@@ -149,9 +149,21 @@ def z_BMP_new(AR_, eps, R_market_estimation_window, R_market_event_window, CAR_p
     SCAR_bar = SCAR.mean()
     S_CAR_bar = SCAR.std(ddof=1)
     z_BMP = N**(1/2)*SCAR_bar/S_CAR_bar
-    return TestResults(z_BMP, scipy.stats.norm.sf(abs(z_BMP))*2)
 
-def adjBMP(AR_, eps, R_market_estimation_window, R_market_event_window, CAR_period, adjustment=True):
+
+    if adjustment:
+        stat = adjust(z_BMP, eps)
+    else:
+        stat = z_BMP
+
+
+    # find p-value for two-tailed test
+    p = scipy.stats.norm.sf(abs(stat)) * 2  # two-tailed test, so we multiply by 2
+    result = TestResults(stat, p)
+
+    return result
+
+def adjBMP_old(AR_, eps, R_market_estimation_window, R_market_event_window, CAR_period, adjustment=True):
     # + because we let the user do [0,40] to get [0,40] and not [0,41], as this is python specific?
     # maybe bad idea to do this, but would have to check this in multiple places
 
@@ -221,7 +233,73 @@ def calculate_grank_Z(U, N, T_script):
 
 
 # implement generalised rank test
-def grank(AR, eps, R_market_estimation_window, R_market_event_window, event_day, CAR_period,
+def grank(AR, eps, R_market_estimation_window, R_market_event_window, CAR_period, adjust_cumulating_ind_prediction_errors=False):
+    """
+    :param AR: abnormal returns
+    :param eps: residuals from the market model
+    :param R_market_estimation_window: returns of the market in the estimation window for each event
+    :param R_market_event_window: returns of the market in the event window for each event
+    :param event_day: day of the event, if day nr 21 is the event day, then event_day = 20
+    :param CAR_period: period of the event window we are observing. Careful for 41 days [0, 40] would represent the full
+    event window
+    :param adjust_cumulating_ind_prediction_errors: Whether to use adjustment factor suggested by Mikkelson and
+    Partch (1988), which makes no difference in this case, because we also calculate the SCAR_star, which is
+    standardised by the standard deviation of the SCAR, therefore the scalar adjustment factor does not change the result.
+    :return: test stats and p-value
+    """
+    M1 = (~np.isnan(R_market_estimation_window)).sum(axis=1)
+    L1 = R_market_estimation_window.shape[1]  # TODO perhaps have to change this
+    L2 = R_market_event_window.shape[1]
+
+    N = AR.shape[0]
+    events = range(R_market_estimation_window.shape[0])
+    days = range(L1 + L2)
+
+    sigma_sq_AR = np.asarray([calc_sigma_sq_AR_i(eps[i], M1[i]) for i in events])
+
+    AR_estimation_and_event = np.concatenate([eps, AR], axis=1)
+
+    R_market = np.concatenate([R_market_estimation_window, R_market_event_window], axis=1)
+    s_sq_AR = [calc_sigma_sq_AR_i(eps[i], M1[i]) for i in events]
+    num = (R_market.transpose() - R_market_estimation_window.mean(axis=1)).transpose()**2
+    denom = (((R_market_event_window.transpose() - R_market_estimation_window.mean(axis=1)).transpose())**2).sum(axis=1)
+    S_AR = np.asarray([[(s_sq_AR[i] * (1 + 1 / M1[i] + num[i, t] / denom[i])) ** (1 / 2) for t in days]for i in events])
+    SAR = AR_estimation_and_event / S_AR
+
+    tau = CAR_period[1] - CAR_period[0] + 1
+    AR_period = AR[:, CAR_period[0]:(CAR_period[-1] + 1)]
+    # CAR_period = AR_period.cumsum(axis=1)
+    # CAR_tau = CAR_period[:,-1]
+    CAR_tau = AR_period.sum(axis=1)
+
+    if adjust_cumulating_ind_prediction_errors:
+        adjustment_factor = (
+                    L1 + L2 + L2 / L1 + ((R_market_event_window - R_market_estimation_window.mean()) ** 2).sum(axis = 1) / (
+                    (R_market_estimation_window - R_market_estimation_window.mean()) ** 2).sum(axis = 1))
+
+    else:
+        adjustment_factor = np.ones(N)  # no adjustment
+
+    SCAR = np.asarray([CAR_tau[i] / (sigma_sq_AR[i] * adjustment_factor[i]) ** (1 / 2) for i in events])
+    SCAR_star = calculate_SCAR_star(SCAR)
+    # for us T_script is the estimation window + the first day of the CAR period
+    T_script = list(range(0, L1)) + [ L1 + CAR_period[0]]
+    GSAR = calculate_GSAR(SCAR_star, SAR, L1, CAR_period[0], tau)
+
+    M_T_script = (~np.isnan(GSAR[:, T_script])).sum(axis=1)
+    N_T_script = (~np.isnan(GSAR[:, T_script])).sum(axis=0)  # just called N in the paper
+    T_script_zero = range(len(T_script))
+    U = calculate_U(GSAR[:, T_script], M_T_script)
+
+    grank_Z = calculate_grank_Z(U, N_T_script, T_script_zero)
+    grank_t = grank_Z * ((L1 - 1) / (L1 - grank_Z ** 2)) ** (1 / 2)
+    pvalue = scipy.stats.t.sf(abs(grank_t), L1 - 1) * 2  # two-tailed test, so we multiply by 2
+    result = TestResults(grank_t, pvalue)
+
+    return result
+
+# implement generalised rank test
+def grank_old(AR, eps, R_market_estimation_window, R_market_event_window, event_day, CAR_period,
           adjust_cumulating_ind_prediction_errors=False):
     """
     :param AR: abnormal returns
@@ -262,8 +340,8 @@ def grank(AR, eps, R_market_estimation_window, R_market_event_window, event_day,
 
     tau = CAR_period[1] - CAR_period[0] + 1
     AR_period = AR[:, CAR_period[0]:(CAR_period[-1] + 1)]
-    # CAR_period = AR_period.cumsum(axis=1)
-    # CAR_tau = CAR_period[:,-1]
+
+
     CAR_tau = AR_period.sum(axis=1)
 
     if adjust_cumulating_ind_prediction_errors:
