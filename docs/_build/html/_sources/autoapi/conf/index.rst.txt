@@ -53,7 +53,7 @@ Module Contents
    
 
 .. py:data:: html_theme
-   :annotation: = alabaster
+   :annotation: = sphinx_rtd_theme
 
    
 
