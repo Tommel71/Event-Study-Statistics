@@ -16,3 +16,5 @@
 ## Usage
 
 Find an example how to use the statistics in the example.py
+
+A documentation can be found here: [readthedocs](https://event-study-statistics.readthedocs.io/en/latest/autoapi/latest/eventstudystatistics/index.html#module-latest.eventstudystatistics)
