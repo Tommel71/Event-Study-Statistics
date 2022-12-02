@@ -5,20 +5,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>eventstudystatistics.statistical_tests &#8212; EventStudyStatistics  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
+    <title>EventStudyStatistics.eventstudystatistics.statistical_tests &#8212; EventStudyStatistics  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
    
-  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -33,7 +33,7 @@
 
           <div class="body" role="main">
             
-  <h1>Source code for eventstudystatistics.statistical_tests</h1><div class="highlight"><pre>
+  <h1>Source code for EventStudyStatistics.eventstudystatistics.statistical_tests</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -45,15 +45,15 @@
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="TestResults"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.TestResults">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">TestResults</span><span class="p">:</span>
-    <span class="n">statistic</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">pvalue</span><span class="p">:</span> <span class="nb">float</span></div>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="TestResults"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.TestResults">[docs]</a><span class="k">class</span> <span class="nc">TestResults</span><span class="p">:</span>
+<div class="viewcode-block" id="TestResults.statistic"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.TestResults.statistic">[docs]</a>    <span class="n">statistic</span><span class="p">:</span> <span class="nb">float</span></div>
+<div class="viewcode-block" id="TestResults.pvalue"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.TestResults.pvalue">[docs]</a>    <span class="n">pvalue</span><span class="p">:</span> <span class="nb">float</span></div></div>
 
 
 <span class="c1">###################### adj-BMP TEST ############################</span>
 
-<div class="viewcode-block" id="calc_sigma_sq_AR_i"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.calc_sigma_sq_AR_i">[docs]</a><span class="k">def</span> <span class="nf">calc_sigma_sq_AR_i</span><span class="p">(</span><span class="n">eps_i</span><span class="p">,</span> <span class="n">M1_i</span><span class="p">):</span>
+<div class="viewcode-block" id="calc_sigma_sq_AR_i"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.calc_sigma_sq_AR_i">[docs]</a><span class="k">def</span> <span class="nf">calc_sigma_sq_AR_i</span><span class="p">(</span><span class="n">eps_i</span><span class="p">,</span> <span class="n">M1_i</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param eps_i: residuals of event i</span>
 <span class="sd">    :param M1_i: non-missing values in eps_i</span>
@@ -62,7 +62,7 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">eps_i</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">M1_i</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="calculate_average_cross_correlation"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.calculate_average_cross_correlation">[docs]</a><span class="k">def</span> <span class="nf">calculate_average_cross_correlation</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5_000_000</span><span class="p">):</span>
+<div class="viewcode-block" id="calculate_average_cross_correlation"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.calculate_average_cross_correlation">[docs]</a><span class="k">def</span> <span class="nf">calculate_average_cross_correlation</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5_000_000</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    :param eps: estimation window residuals</span>
@@ -106,7 +106,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">cross_correlation</span><span class="p">(</span><span class="n">tuple_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tuple_</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">tuple_</span> <span class="ow">in</span> <span class="n">subset</span><span class="p">])</span></div>
 
 
-<div class="viewcode-block" id="adjust"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.adjust">[docs]</a><span class="k">def</span> <span class="nf">adjust</span><span class="p">(</span><span class="n">z_BMP</span><span class="p">,</span> <span class="n">eps</span><span class="p">):</span>
+<div class="viewcode-block" id="adjust"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.adjust">[docs]</a><span class="k">def</span> <span class="nf">adjust</span><span class="p">(</span><span class="n">z_BMP</span><span class="p">,</span> <span class="n">eps</span><span class="p">):</span>
     <span class="s2">&quot;Make adjustment to BMP test statistic&quot;</span>
     <span class="n">rho_bar_hat</span> <span class="o">=</span> <span class="n">calculate_average_cross_correlation</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
     <span class="n">N</span> <span class="o">=</span> <span class="n">eps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -115,7 +115,7 @@
 
 
 <span class="c1"># implement an adjusted böhmer test</span>
-<div class="viewcode-block" id="adjBMP_daily"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.adjBMP_daily">[docs]</a><span class="k">def</span> <span class="nf">adjBMP_daily</span><span class="p">(</span><span class="n">AR</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_estimation_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<div class="viewcode-block" id="adjBMP_daily"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.adjBMP_daily">[docs]</a><span class="k">def</span> <span class="nf">adjBMP_daily</span><span class="p">(</span><span class="n">AR</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_estimation_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">R_market_event_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">adjustment</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TestResults</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    adjusted BMP / standardized cross-sectional test</span>
@@ -160,7 +160,7 @@
 
     <span class="k">return</span> <span class="n">result</span></div>
 
-<div class="viewcode-block" id="adjBMP"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.adjBMP">[docs]</a><span class="k">def</span> <span class="nf">adjBMP</span><span class="p">(</span><span class="n">AR</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_estimation_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<div class="viewcode-block" id="adjBMP"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.adjBMP">[docs]</a><span class="k">def</span> <span class="nf">adjBMP</span><span class="p">(</span><span class="n">AR</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_estimation_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
            <span class="n">R_market_event_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">CAR_period</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">adjustment</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TestResults</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    adjusted BMP / standardized cross-sectional test as in the paper</span>
@@ -215,21 +215,21 @@
 <span class="c1">###################### GRANK TEST ############################</span>
 
 
-<div class="viewcode-block" id="calculate_GSAR"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.calculate_GSAR">[docs]</a><span class="k">def</span> <span class="nf">calculate_GSAR</span><span class="p">(</span><span class="n">SCAR</span><span class="p">,</span> <span class="n">SAR</span><span class="p">,</span> <span class="n">L1</span><span class="p">,</span> <span class="n">t_1</span><span class="p">,</span> <span class="n">tau</span><span class="p">):</span>
+<div class="viewcode-block" id="calculate_GSAR"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.calculate_GSAR">[docs]</a><span class="k">def</span> <span class="nf">calculate_GSAR</span><span class="p">(</span><span class="n">SCAR</span><span class="p">,</span> <span class="n">SAR</span><span class="p">,</span> <span class="n">L1</span><span class="p">,</span> <span class="n">t_1</span><span class="p">,</span> <span class="n">tau</span><span class="p">):</span>
     <span class="s2">&quot;repeat SCAR tau days and concatenate arrays&quot;</span>
     <span class="n">GSAR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">SAR</span><span class="p">[:,</span> <span class="p">:</span><span class="n">L1</span> <span class="o">+</span> <span class="n">t_1</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="n">SCAR</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tau</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span><span class="n">SAR</span><span class="p">[:,</span> <span class="n">L1</span> <span class="o">+</span> <span class="n">t_1</span> <span class="o">+</span> <span class="n">tau</span><span class="p">:]],</span>
                           <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">GSAR</span></div>
 
 
-<div class="viewcode-block" id="calculate_U"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.calculate_U">[docs]</a><span class="k">def</span> <span class="nf">calculate_U</span><span class="p">(</span><span class="n">GSAR_T_script</span><span class="p">,</span> <span class="n">M_T_script</span><span class="p">):</span>
+<div class="viewcode-block" id="calculate_U"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.calculate_U">[docs]</a><span class="k">def</span> <span class="nf">calculate_U</span><span class="p">(</span><span class="n">GSAR_T_script</span><span class="p">,</span> <span class="n">M_T_script</span><span class="p">):</span>
     <span class="s2">&quot;calculate ranks, divide by the number of valid days and then subtract 0.5. Should have mean 0.&quot;</span>
     <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">rankdata</span><span class="p">(</span><span class="n">GSAR_T_script</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">M_T_script</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.5</span>
 
     <span class="k">return</span> <span class="n">result</span></div>
 
 
-<div class="viewcode-block" id="calculate_grank_Z"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.calculate_grank_Z">[docs]</a><span class="k">def</span> <span class="nf">calculate_grank_Z</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">T_script</span><span class="p">):</span>
+<div class="viewcode-block" id="calculate_grank_Z"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.calculate_grank_Z">[docs]</a><span class="k">def</span> <span class="nf">calculate_grank_Z</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">T_script</span><span class="p">):</span>
     <span class="s2">&quot;calculate grank test statistic&quot;</span>
     <span class="n">U_bar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">1</span> <span class="o">/</span> <span class="n">N</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">U</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span>
                         <span class="n">T_script</span><span class="p">])</span>  <span class="c1"># TODO ASSUMING NO NANS FOR NOW, WITH NANS WE NEED LIKE A LIST AS U</span>
@@ -239,7 +239,7 @@
 
 
 <span class="c1"># implement generalised rank test</span>
-<div class="viewcode-block" id="grank"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.grank">[docs]</a><span class="k">def</span> <span class="nf">grank</span><span class="p">(</span><span class="n">AR</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_estimation_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_event_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<div class="viewcode-block" id="grank"><a class="viewcode-back" href="../../../autoapi/EventStudyStatistics/eventstudystatistics/statistical_tests/index.html#EventStudyStatistics.eventstudystatistics.grank">[docs]</a><span class="k">def</span> <span class="nf">grank</span><span class="p">(</span><span class="n">AR</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_estimation_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_event_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
           <span class="n">CAR_period</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">adjust_cumulating_ind_prediction_errors</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TestResults</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the GRANK / generalized rank t test, as found in the paper &quot;Nonparametric rank tests for event studied&quot;</span>
@@ -317,7 +317,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../../index.html">EventStudyStatistics</a></h1>
+<h1 class="logo"><a href="../../../index.html">EventStudyStatistics</a></h1>
 
 
 
@@ -329,15 +329,15 @@
 <h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">eventstudystatistics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">eventstudystatistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
-  <li><a href="../../index.html">Documentation overview</a><ul>
-  <li><a href="../index.html">Module code</a><ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
   </ul></li>
   </ul></li>
 </ul>
@@ -345,7 +345,7 @@
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
+    <form class="search" action="../../../search.html" method="get">
       <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
