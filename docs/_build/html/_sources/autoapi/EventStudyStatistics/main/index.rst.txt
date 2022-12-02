@@ -1,0 +1,197 @@
+:py:mod:`EventStudyStatistics.main`
+===================================
+
+.. py:module:: EventStudyStatistics.main
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   EventStudyStatistics.main.calculate_coefficients
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   EventStudyStatistics.main.params
+   EventStudyStatistics.main.test1
+   EventStudyStatistics.main.test2
+   EventStudyStatistics.main.CAR_period
+   EventStudyStatistics.main.n_events
+   EventStudyStatistics.main.length_event_window
+   EventStudyStatistics.main.length_estimation_window
+   EventStudyStatistics.main.event_day
+   EventStudyStatistics.main.event_window_market_return
+   EventStudyStatistics.main.event_window_company_return
+   EventStudyStatistics.main.estimation_window_market_return
+   EventStudyStatistics.main.estimation_window_company_return
+   EventStudyStatistics.main.AR_
+   EventStudyStatistics.main.eps_
+   EventStudyStatistics.main.abnormal_return
+   EventStudyStatistics.main.AR
+   EventStudyStatistics.main.eps
+   EventStudyStatistics.main.test_res
+   EventStudyStatistics.main.test_res
+   EventStudyStatistics.main.test_res2
+   EventStudyStatistics.main.adjBMP_results
+   EventStudyStatistics.main.grank_results
+   EventStudyStatistics.main.J
+   EventStudyStatistics.main.event_window_market_return
+   EventStudyStatistics.main.adj_BMP_z_stat
+   EventStudyStatistics.main.grank_t_stat
+   EventStudyStatistics.main.x
+   EventStudyStatistics.main.x
+
+
+.. py:function:: calculate_coefficients(X, Y)
+
+
+.. py:data:: params
+   
+
+   
+
+.. py:data:: test1
+   
+
+   
+
+.. py:data:: test2
+   
+
+   
+
+.. py:data:: CAR_period
+   :annotation: = [0, 40]
+
+   
+
+.. py:data:: n_events
+   :annotation: = 120
+
+   
+
+.. py:data:: length_event_window
+   :annotation: = 41
+
+   
+
+.. py:data:: length_estimation_window
+   :annotation: = 100
+
+   
+
+.. py:data:: event_day
+   :annotation: = 20
+
+   
+
+.. py:data:: event_window_market_return
+   
+
+   
+
+.. py:data:: event_window_company_return
+   
+
+   
+
+.. py:data:: estimation_window_market_return
+   
+
+   
+
+.. py:data:: estimation_window_company_return
+   
+
+   
+
+.. py:data:: AR_
+   :annotation: = []
+
+   
+
+.. py:data:: eps_
+   :annotation: = []
+
+   
+
+.. py:data:: abnormal_return
+   
+
+   
+
+.. py:data:: AR
+   
+
+   
+
+.. py:data:: eps
+   
+
+   
+
+.. py:data:: test_res
+   
+
+   
+
+.. py:data:: test_res
+   
+
+   
+
+.. py:data:: test_res2
+   
+
+   
+
+.. py:data:: adjBMP_results
+   :annotation: = []
+
+   
+
+.. py:data:: grank_results
+   :annotation: = []
+
+   
+
+.. py:data:: J
+   :annotation: = 5000
+
+   
+
+.. py:data:: event_window_market_return
+   
+
+   
+
+.. py:data:: adj_BMP_z_stat
+   
+
+   
+
+.. py:data:: grank_t_stat
+   
+
+   
+
+.. py:data:: x
+   
+
+   
+
+.. py:data:: x
+   
+
+   
+

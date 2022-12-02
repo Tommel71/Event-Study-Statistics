@@ -1,0 +1,64 @@
+:py:mod:`conf`
+==============
+
+.. py:module:: conf
+
+
+Module Contents
+---------------
+
+.. py:data:: addedpath
+   
+
+   
+
+.. py:data:: project
+   :annotation: = EventStudyStatistics
+
+   
+
+.. py:data:: copyright
+   :annotation: = 2022, Thomas Niedermayer
+
+   
+
+.. py:data:: author
+   :annotation: = Thomas Niedermayer
+
+   
+
+.. py:data:: extensions
+   :annotation: = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+
+   
+
+.. py:data:: autoapi_type
+   :annotation: = python
+
+   
+
+.. py:data:: autoapi_dirs
+   :annotation: = ['..']
+
+   
+
+.. py:data:: templates_path
+   :annotation: = ['_templates']
+
+   
+
+.. py:data:: exclude_patterns
+   :annotation: = ['_build', 'Thumbs.db', '.DS_Store']
+
+   
+
+.. py:data:: html_theme
+   :annotation: = alabaster
+
+   
+
+.. py:data:: html_static_path
+   :annotation: = ['_static']
+
+   
+

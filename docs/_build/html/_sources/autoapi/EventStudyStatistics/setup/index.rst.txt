@@ -1,0 +1,14 @@
+:py:mod:`EventStudyStatistics.setup`
+====================================
+
+.. py:module:: EventStudyStatistics.setup
+
+
+Module Contents
+---------------
+
+.. py:data:: required
+   
+
+   
+

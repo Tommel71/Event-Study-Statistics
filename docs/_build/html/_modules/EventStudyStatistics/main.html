@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventStudyStatistics.main &#8212; EventStudyStatistics  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for EventStudyStatistics.main</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">t</span><span class="p">,</span> <span class="n">norm</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">eventstudystatistics</span> <span class="kn">import</span> <span class="n">adjBMP</span><span class="p">,</span> <span class="n">adjBMP_daily</span><span class="p">,</span> <span class="n">grank</span>
+
+<div class="viewcode-block" id="calculate_coefficients"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.calculate_coefficients">[docs]</a><span class="k">def</span> <span class="nf">calculate_coefficients</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">):</span>
+    <span class="c1"># implement ordinary least squares in numpy</span>
+
+    <span class="c1"># add a constant to the X matrix</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">X</span><span class="p">]</span>
+
+    <span class="c1"># calculate the coefficients</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">X</span><span class="p">)</span> <span class="o">@</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Y</span>
+
+    <span class="c1"># calculate the residuals</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span>
+
+    <span class="k">return</span> <span class="n">beta</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">beta</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">eps</span></div>
+
+
+<span class="c1"># load pickle file from tests</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;tests/params_adjbmp_grank.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<div class="viewcode-block" id="params"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.params">[docs]</a>    <span class="n">params</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="test1"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.test1">[docs]</a><span class="n">test1</span> <span class="o">=</span> <span class="n">grank</span><span class="p">(</span><span class="o">*</span><span class="n">params</span><span class="p">)</span></div>
+<div class="viewcode-block" id="test2"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.test2">[docs]</a><span class="n">test2</span> <span class="o">=</span> <span class="n">adjBMP</span><span class="p">(</span><span class="o">*</span><span class="n">params</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="CAR_period"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.CAR_period">[docs]</a><span class="n">CAR_period</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>  <span class="c1"># including both edges, CAREFUL, this is not like python indexing, this is including the right side.</span></div>
+<div class="viewcode-block" id="n_events"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.n_events">[docs]</a><span class="n">n_events</span> <span class="o">=</span> <span class="mi">120</span></div>
+<div class="viewcode-block" id="length_event_window"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.length_event_window">[docs]</a><span class="n">length_event_window</span> <span class="o">=</span> <span class="mi">41</span> <span class="c1"># L2</span></div>
+<div class="viewcode-block" id="length_estimation_window"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.length_estimation_window">[docs]</a><span class="n">length_estimation_window</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1"># L1</span></div>
+<div class="viewcode-block" id="event_day"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.event_day">[docs]</a><span class="n">event_day</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1"># within the event window index 20 is the event day</span></div>
+
+<span class="c1"># single example for all tests:</span>
+
+<span class="n">event_window_market_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="p">(</span><span class="n">n_events</span><span class="p">,</span> <span class="n">length_event_window</span><span class="p">))</span>
+<div class="viewcode-block" id="event_window_company_return"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.event_window_company_return">[docs]</a><span class="n">event_window_company_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="p">(</span><span class="n">n_events</span><span class="p">,</span> <span class="n">length_event_window</span><span class="p">))</span> <span class="o">+</span> <span class="n">event_window_market_return</span></div>
+
+<div class="viewcode-block" id="estimation_window_market_return"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.estimation_window_market_return">[docs]</a><span class="n">estimation_window_market_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="p">(</span><span class="n">n_events</span><span class="p">,</span> <span class="n">length_estimation_window</span><span class="p">))</span></div>
+<div class="viewcode-block" id="estimation_window_company_return"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.estimation_window_company_return">[docs]</a><span class="n">estimation_window_company_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="p">(</span><span class="n">n_events</span><span class="p">,</span> <span class="n">length_estimation_window</span><span class="p">))</span> <span class="o">+</span> <span class="n">estimation_window_market_return</span></div>
+
+<div class="viewcode-block" id="AR_"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.AR_">[docs]</a><span class="n">AR_</span> <span class="o">=</span> <span class="p">[]</span></div>
+<div class="viewcode-block" id="eps_"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.eps_">[docs]</a><span class="n">eps_</span> <span class="o">=</span> <span class="p">[]</span></div>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;calculate abnormal returns...&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_events</span><span class="p">):</span>
+    <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">eps</span> <span class="o">=</span> <span class="n">calculate_coefficients</span><span class="p">(</span><span class="n">estimation_window_market_return</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span>
+                                                  <span class="n">estimation_window_company_return</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="c1">## Calculate the abnormal returns</span>
+<div class="viewcode-block" id="abnormal_return"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.abnormal_return">[docs]</a>    <span class="n">abnormal_return</span> <span class="o">=</span> <span class="n">event_window_company_return</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">event_window_market_return</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span></div>
+    <span class="n">AR_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">abnormal_return</span><span class="p">)</span>
+    <span class="n">eps_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done calculating abnormal returns&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="AR"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.AR">[docs]</a><span class="n">AR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">AR_</span><span class="p">)</span></div>
+<div class="viewcode-block" id="eps"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.eps">[docs]</a><span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">eps_</span><span class="p">)</span></div>
+
+
+<span class="n">test_res</span> <span class="o">=</span> <span class="n">adjBMP_daily</span><span class="p">(</span><span class="n">AR</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">estimation_window_market_return</span><span class="p">,</span> <span class="n">event_window_market_return</span><span class="p">,</span> <span class="n">event_day</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_res</span><span class="p">)</span>
+
+<div class="viewcode-block" id="test_res"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.test_res">[docs]</a><span class="n">test_res</span> <span class="o">=</span> <span class="n">adjBMP</span><span class="p">(</span><span class="n">AR</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">estimation_window_market_return</span><span class="p">,</span> <span class="n">event_window_market_return</span><span class="p">,</span> <span class="n">CAR_period</span><span class="p">)</span></div>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_res</span><span class="p">)</span>
+
+<div class="viewcode-block" id="test_res2"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.test_res2">[docs]</a><span class="n">test_res2</span> <span class="o">=</span> <span class="n">grank</span><span class="p">(</span><span class="n">AR</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">estimation_window_market_return</span><span class="p">,</span> <span class="n">event_window_market_return</span><span class="p">,</span> <span class="n">CAR_period</span><span class="p">)</span></div>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_res2</span><span class="p">)</span>
+
+<span class="c1">### SIMULATION:</span>
+
+<span class="c1">### test if there are no missing values in the data, expecting high p value</span>
+<div class="viewcode-block" id="adjBMP_results"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.adjBMP_results">[docs]</a><span class="n">adjBMP_results</span> <span class="o">=</span> <span class="p">[]</span></div>
+<div class="viewcode-block" id="grank_results"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.grank_results">[docs]</a><span class="n">grank_results</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="viewcode-block" id="J"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.J">[docs]</a><span class="n">J</span> <span class="o">=</span> <span class="mi">5000</span></div>
+
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">J</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+<div class="viewcode-block" id="event_window_market_return"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.event_window_market_return">[docs]</a>    <span class="n">event_window_market_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="p">(</span><span class="n">n_events</span><span class="p">,</span> <span class="n">length_event_window</span><span class="p">))</span></div>
+    <span class="n">event_window_company_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="p">(</span><span class="n">n_events</span><span class="p">,</span> <span class="n">length_event_window</span><span class="p">))</span> <span class="o">+</span> <span class="n">event_window_market_return</span>
+
+    <span class="n">estimation_window_market_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="p">(</span><span class="n">n_events</span><span class="p">,</span> <span class="n">length_estimation_window</span><span class="p">))</span>
+    <span class="n">estimation_window_company_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="p">(</span><span class="n">n_events</span><span class="p">,</span> <span class="n">length_estimation_window</span><span class="p">))</span> <span class="o">+</span> <span class="n">estimation_window_market_return</span>
+
+    <span class="n">AR_</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">eps_</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;calculate AR...&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_events</span><span class="p">):</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">eps</span> <span class="o">=</span> <span class="n">calculate_coefficients</span><span class="p">(</span><span class="n">estimation_window_market_return</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span>
+                                                      <span class="n">estimation_window_company_return</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="c1">## Calculate the abnormal returns</span>
+        <span class="n">abnormal_return</span> <span class="o">=</span> <span class="n">event_window_company_return</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">event_window_market_return</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">AR_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">abnormal_return</span><span class="p">)</span>
+        <span class="n">eps_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done calculating AR&quot;</span><span class="p">)</span>
+    <span class="n">AR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">AR_</span><span class="p">)</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">eps_</span><span class="p">)</span>
+
+    <span class="c1">#test_res = adjBMP(AR, eps, estimation_window_market_return, event_window_market_return, CAR_period, adjustment=False)</span>
+    <span class="c1">#adjBMP_results.append(test_res)</span>
+
+    <span class="c1">#test_res_daily = adjBMP_daily(AR, eps, estimation_window_market_return, event_window_market_return, event_day, adjustment=False)</span>
+    <span class="c1">#adjBMP_results.append(test_res_daily)</span>
+
+    <span class="n">test_res2</span> <span class="o">=</span> <span class="n">grank</span><span class="p">(</span><span class="n">AR</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">estimation_window_market_return</span><span class="p">,</span> <span class="n">event_window_market_return</span><span class="p">,</span> <span class="n">CAR_period</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">grank_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_res2</span><span class="p">)</span>
+
+
+
+<div class="viewcode-block" id="adj_BMP_z_stat"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.adj_BMP_z_stat">[docs]</a><span class="n">adj_BMP_z_stat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">res</span><span class="o">.</span><span class="n">statistic</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">adjBMP_results</span><span class="p">])</span></div>
+<div class="viewcode-block" id="grank_t_stat"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.grank_t_stat">[docs]</a><span class="n">grank_t_stat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">res</span><span class="o">.</span><span class="n">statistic</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">grank_results</span><span class="p">])</span></div>
+
+<span class="c1"># histogram of the statistics</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">adj_BMP_z_stat</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># add a standard normal distribution</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">length_estimation_window</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">norm</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">grank_t_stat</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># add a student t distribution of 99 degrees of freedom</span>
+<div class="viewcode-block" id="x"><a class="viewcode-back" href="../../autoapi/EventStudyStatistics/main/index.html#EventStudyStatistics.main.x">[docs]</a><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">length_estimation_window</span><span class="p">)</span></div>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">length_estimation_window</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">EventStudyStatistics</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">eventstudystatistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Thomas Niedermayer.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
