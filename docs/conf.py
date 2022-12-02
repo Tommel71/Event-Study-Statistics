@@ -16,7 +16,10 @@
 import os
 import sys
 
-addedpath = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath('.'))))
+addedpath = os.path.join(os.path.dirname(os.path.abspath('.')), "eventstudystatistics")
+print(addedpath)
+sys.path.insert(0, addedpath)
+addedpath = os.path.dirname(os.path.abspath('.'))
 print(addedpath)
 sys.path.insert(0, addedpath)
 
