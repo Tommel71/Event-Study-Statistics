@@ -1,0 +1,144 @@
+:py:mod:`EventStudyStatistics.eventstudystatistics.statistical_tests`
+=====================================================================
+
+.. py:module:: EventStudyStatistics.eventstudystatistics.statistical_tests
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   EventStudyStatistics.eventstudystatistics.statistical_tests.TestResults
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   EventStudyStatistics.eventstudystatistics.statistical_tests.calc_sigma_sq_AR_i
+   EventStudyStatistics.eventstudystatistics.statistical_tests.calculate_average_cross_correlation
+   EventStudyStatistics.eventstudystatistics.statistical_tests.adjust
+   EventStudyStatistics.eventstudystatistics.statistical_tests.adjBMP_daily
+   EventStudyStatistics.eventstudystatistics.statistical_tests.adjBMP
+   EventStudyStatistics.eventstudystatistics.statistical_tests.calculate_GSAR
+   EventStudyStatistics.eventstudystatistics.statistical_tests.calculate_U
+   EventStudyStatistics.eventstudystatistics.statistical_tests.calculate_grank_Z
+   EventStudyStatistics.eventstudystatistics.statistical_tests.grank
+
+
+
+.. py:class:: TestResults
+
+   .. py:attribute:: statistic
+      :annotation: :float
+
+      
+
+   .. py:attribute:: pvalue
+      :annotation: :float
+
+      
+
+
+.. py:function:: calc_sigma_sq_AR_i(eps_i, M1_i)
+
+   :param eps_i: residuals of event i
+   :param M1_i: non-missing values in eps_i
+   :return: sigma_sq_AR_i
+
+
+.. py:function:: calculate_average_cross_correlation(eps, threshold=5000000)
+
+   :param eps: estimation window residuals
+   :param threshold: Where to start subsampling, subsampling will pick threshold/2 datapoints at random without replacement and without the diagonal line
+   :return: average cross correlation
+
+
+.. py:function:: adjust(z_BMP, eps)
+
+   Make adjustment to BMP test statistic
+
+
+.. py:function:: adjBMP_daily(AR, eps, R_market_estimation_window, R_market_event_window, t, adjustment = True)
+
+   adjusted BMP / standardized cross-sectional test
+
+   null hypothesis: E(AAR) = 0
+
+
+   We have n events, L1 days in the estimation window, L2 days in the event window.
+
+   :param AR: abnormal returns, a n x L2 matrix
+   :param eps: residuals from the market model, a n x L1 matrix
+   :param R_market_estimation_window: returns of the market in the estimation window for each event, a n x L1 matrix
+   :param R_market_event_window: returns of the market in the event window for each event, a n x L2 matrix
+   :param t: day of the event, if day nr 21 is the event day, then event_day = 20
+   :param adjustment: whether the BMP (False) or the adjusted BMP (True) should be calculated.
+   In case of too many events, the cross correlation is estimated because of the runtime complexity of the calculation.
+   :return: test statistic and p-value
+
+
+.. py:function:: adjBMP(AR, eps, R_market_estimation_window, R_market_event_window, CAR_period, adjustment = True)
+
+   adjusted BMP / standardized cross-sectional test as in the paper
+   "Event study methodology under conditions of event induced variance" by  Böhmer et al. (1991)
+
+   null hypothesis: E(CAAR) = 0
+
+   We have n events, L1 days in the estimation window, L2 days in the event window.
+
+   :param AR: abnormal returns, a n x L2 matrix
+   :param eps: residuals from the market model, a n x L1 matrix
+   :param R_market_estimation_window: returns of the market in the estimation window for each event, a n x L1 matrix
+   :param R_market_event_window: returns of the market in the event window for each even, a n x L2 matrix
+   :param event_day: day of the event, if day nr 21 is the event day, then event_day = 20
+   :param CAR_period: period of the event window we are observing. Careful for 41 days [0, 40] would represent the full
+   event window.
+   :param adjustment: whether the BMP (False) or the adjusted BMP (True) should be calculated.
+   In case of too many events, the cross correlation is estimated because of the runtime complexity of the calculation.
+   :return:
+
+
+.. py:function:: calculate_GSAR(SCAR, SAR, L1, t_1, tau)
+
+   repeat SCAR tau days and concatenate arrays
+
+
+.. py:function:: calculate_U(GSAR_T_script, M_T_script)
+
+   calculate ranks, divide by the number of valid days and then subtract 0.5. Should have mean 0.
+
+
+.. py:function:: calculate_grank_Z(U, N, T_script)
+
+   calculate grank test statistic
+
+
+.. py:function:: grank(AR, eps, R_market_estimation_window, R_market_event_window, CAR_period, adjust_cumulating_ind_prediction_errors = False)
+
+   Calculate the GRANK / generalized rank t test, as found in the paper "Nonparametric rank tests for event studied"
+   by Kolari and Pynnonen (2011). Optional adjustment as found in Mikkelson and Partch (1988) "Withdrawn Security Offerings"
+
+   null hypothesis: E(CAAR) = 0
+
+
+   We have n events, L1 days in the estimation window, L2 days in the event window.
+
+   :param AR: abnormal returns, a n x L2 matrix
+   :param eps: residuals from the market model, a n x L1 matrix
+   :param R_market_estimation_window: returns of the market in the estimation window for each event, a n x L1 matrix
+   :param R_market_event_window: returns of the market in the event window for each event, a n x L2 matrix
+   :param CAR_period: period of the event window we are observing. Careful for 41 days [0, 40] would represent the full
+   event window
+   :param adjust_cumulating_ind_prediction_errors: Whether to use adjustment factor suggested by Mikkelson and
+   Partch (1988), which makes no difference in this case, because we also calculate the SCAR_star, which is
+   standardised by the standard deviation of the SCAR, therefore the scalar adjustment factor does not change the result.
+   :return: test statistic and p-value
+
+

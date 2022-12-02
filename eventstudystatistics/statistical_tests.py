@@ -220,8 +220,7 @@ def grank(AR: np.ndarray, eps: np.ndarray, R_market_estimation_window: np.ndarra
     :param CAR_period: period of the event window we are observing. Careful for 41 days [0, 40] would represent the full
     event window
     :param adjust_cumulating_ind_prediction_errors: Whether to use adjustment factor suggested by Mikkelson and
-    Partch (1988), which makes no difference in this case, because we also calculate the SCAR_star, which is
-    standardised by the standard deviation of the SCAR, therefore the scalar adjustment factor does not change the result.
+    Partch (1988)
     :return: test statistic and p-value
     """
     M1 = (~np.isnan(R_market_estimation_window)).sum(axis=1)
