@@ -82,10 +82,7 @@ def adjBMP_daily(AR: np.ndarray, eps: np.ndarray, R_market_estimation_window: np
                  R_market_event_window: np.ndarray, t: int, adjustment: bool=True) -> TestResults:
     """
     adjusted BMP / standardized cross-sectional test
-
     null hypothesis: E(AAR) = 0
-
-
     We have n events, L1 days in the estimation window, L2 days in the event window.
 
     :param AR: abnormal returns, a n x L2 matrix
@@ -93,8 +90,7 @@ def adjBMP_daily(AR: np.ndarray, eps: np.ndarray, R_market_estimation_window: np
     :param R_market_estimation_window: returns of the market in the estimation window for each event, a n x L1 matrix
     :param R_market_event_window: returns of the market in the event window for each event, a n x L2 matrix
     :param t: day of the event, if day nr 21 is the event day, then event_day = 20
-    :param adjustment: whether the BMP (False) or the adjusted BMP (True) should be calculated.
-    In case of too many events, the cross correlation is estimated because of the runtime complexity of the calculation.
+    :param adjustment: whether the BMP (False) or the adjusted BMP (True) should be calculated. In case of too many events, the cross correlation is estimated because of the runtime complexity of the calculation.
     :return: test statistic and p-value
     """
 
@@ -128,9 +124,7 @@ def adjBMP(AR: np.ndarray, eps: np.ndarray, R_market_estimation_window: np.ndarr
     """
     adjusted BMP / standardized cross-sectional test as in the paper
     "Event study methodology under conditions of event induced variance" by  Böhmer et al. (1991)
-
     null hypothesis: E(CAAR) = 0
-
     We have n events, L1 days in the estimation window, L2 days in the event window.
 
     :param AR: abnormal returns, a n x L2 matrix
@@ -138,11 +132,9 @@ def adjBMP(AR: np.ndarray, eps: np.ndarray, R_market_estimation_window: np.ndarr
     :param R_market_estimation_window: returns of the market in the estimation window for each event, a n x L1 matrix
     :param R_market_event_window: returns of the market in the event window for each even, a n x L2 matrix
     :param event_day: day of the event, if day nr 21 is the event day, then event_day = 20
-    :param CAR_period: period of the event window we are observing. Careful for 41 days [0, 40] would represent the full
-    event window.
-    :param adjustment: whether the BMP (False) or the adjusted BMP (True) should be calculated.
-    In case of too many events, the cross correlation is estimated because of the runtime complexity of the calculation.
-    :return:
+    :param CAR_period: period of the event window we are observing. Careful for 41 days [0, 40] would represent the full event window.
+    :param adjustment: whether the BMP (False) or the adjusted BMP (True) should be calculated. In case of too many events, the cross correlation is estimated because of the runtime complexity of the calculation.
+    :return: test statistic and p-value
     """
 
     N = AR.shape[0]
@@ -205,22 +197,17 @@ def calculate_grank_Z(U, N, T_script):
 def grank(AR: np.ndarray, eps: np.ndarray, R_market_estimation_window: np.ndarray, R_market_event_window: np.ndarray,
           CAR_period: list, adjust_cumulating_ind_prediction_errors: bool=False) -> TestResults:
     """
-    Calculate the GRANK / generalized rank t test, as found in the paper "Nonparametric rank tests for event studied"
+    GRANK / generalized rank t test, as found in the paper "Nonparametric rank tests for event studied"
     by Kolari and Pynnonen (2011). Optional adjustment as found in Mikkelson and Partch (1988) "Withdrawn Security Offerings"
-
     null hypothesis: E(CAAR) = 0
-
-
     We have n events, L1 days in the estimation window, L2 days in the event window.
 
     :param AR: abnormal returns, a n x L2 matrix
     :param eps: residuals from the market model, a n x L1 matrix
     :param R_market_estimation_window: returns of the market in the estimation window for each event, a n x L1 matrix
     :param R_market_event_window: returns of the market in the event window for each event, a n x L2 matrix
-    :param CAR_period: period of the event window we are observing. Careful for 41 days [0, 40] would represent the full
-    event window
-    :param adjust_cumulating_ind_prediction_errors: Whether to use adjustment factor suggested by Mikkelson and
-    Partch (1988)
+    :param CAR_period: period of the event window we are observing. Careful for 41 days [0, 40] would represent the full event window
+    :param adjust_cumulating_ind_prediction_errors: Whether to use adjustment factor suggested by Mikkelson and Partch (1988)
     :return: test statistic and p-value
     """
     M1 = (~np.isnan(R_market_estimation_window)).sum(axis=1)
