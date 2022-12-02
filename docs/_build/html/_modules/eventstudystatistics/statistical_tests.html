@@ -1,0 +1,377 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eventstudystatistics.statistical_tests &#8212; EventStudyStatistics  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for eventstudystatistics.statistical_tests</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">dataclasses</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># set logging to debug</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TestResults"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.TestResults">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">TestResults</span><span class="p">:</span>
+    <span class="n">statistic</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">pvalue</span><span class="p">:</span> <span class="nb">float</span></div>
+
+
+<span class="c1">###################### adj-BMP TEST ############################</span>
+
+<div class="viewcode-block" id="calc_sigma_sq_AR_i"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.calc_sigma_sq_AR_i">[docs]</a><span class="k">def</span> <span class="nf">calc_sigma_sq_AR_i</span><span class="p">(</span><span class="n">eps_i</span><span class="p">,</span> <span class="n">M1_i</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param eps_i: residuals of event i</span>
+<span class="sd">    :param M1_i: non-missing values in eps_i</span>
+<span class="sd">    :return: sigma_sq_AR_i</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">eps_i</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">M1_i</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calculate_average_cross_correlation"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.calculate_average_cross_correlation">[docs]</a><span class="k">def</span> <span class="nf">calculate_average_cross_correlation</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5_000_000</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    :param eps: estimation window residuals</span>
+<span class="sd">    :param threshold: Where to start subsampling, subsampling will pick threshold/2 datapoints at random without replacement and without the diagonal line</span>
+<span class="sd">    :return: average cross correlation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># to save half the work</span>
+    <span class="k">def</span> <span class="nf">cross_correlation</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span><span class="n">eps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">eps</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:])</span>
+
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">eps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">:]</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="n">eps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">N</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">cross_correlation</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">j</span><span class="p">])</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Too many events to calculate average cross correlation, subsampling combinations...&quot;</span><span class="p">)</span>
+    <span class="c1"># subsample tuples</span>
+    <span class="n">subset</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">len_subset</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">draw_tuple</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="c1"># draw</span>
+        <span class="n">tuple_drawn</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">tuple_drawn</span> <span class="ow">in</span> <span class="n">subset</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">tuple_drawn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">tuple_drawn</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">return</span>
+
+        <span class="n">subset</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tuple_drawn</span><span class="p">)</span>
+        <span class="n">len_subset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">while</span> <span class="n">len_subset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">threshold</span> <span class="o">/</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">draw_tuple</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="n">subset</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">cross_correlation</span><span class="p">(</span><span class="n">tuple_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tuple_</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">tuple_</span> <span class="ow">in</span> <span class="n">subset</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="adjust"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.adjust">[docs]</a><span class="k">def</span> <span class="nf">adjust</span><span class="p">(</span><span class="n">z_BMP</span><span class="p">,</span> <span class="n">eps</span><span class="p">):</span>
+    <span class="s2">&quot;Make adjustment to BMP test statistic&quot;</span>
+    <span class="n">rho_bar_hat</span> <span class="o">=</span> <span class="n">calculate_average_cross_correlation</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">eps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">adjusted</span> <span class="o">=</span> <span class="n">z_BMP</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rho_bar_hat</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">rho_bar_hat</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">adjusted</span></div>
+
+
+<span class="c1"># implement an adjusted böhmer test</span>
+<div class="viewcode-block" id="adjBMP_daily"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.adjBMP_daily">[docs]</a><span class="k">def</span> <span class="nf">adjBMP_daily</span><span class="p">(</span><span class="n">AR</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_estimation_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                 <span class="n">R_market_event_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">adjustment</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TestResults</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    adjusted BMP / standardized cross-sectional test</span>
+
+<span class="sd">    null hypothesis: E(AAR) = 0</span>
+
+
+<span class="sd">    We have n events, L1 days in the estimation window, L2 days in the event window.</span>
+
+<span class="sd">    :param AR: abnormal returns, a n x L2 matrix</span>
+<span class="sd">    :param eps: residuals from the market model, a n x L1 matrix</span>
+<span class="sd">    :param R_market_estimation_window: returns of the market in the estimation window for each event, a n x L1 matrix</span>
+<span class="sd">    :param R_market_event_window: returns of the market in the event window for each event, a n x L2 matrix</span>
+<span class="sd">    :param t: day of the event, if day nr 21 is the event day, then event_day = 20</span>
+<span class="sd">    :param adjustment: whether the BMP (False) or the adjusted BMP (True) should be calculated.</span>
+<span class="sd">    In case of too many events, the cross correlation is estimated because of the runtime complexity of the calculation.</span>
+<span class="sd">    :return: test statistic and p-value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="n">AR</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">M1</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">R_market_estimation_window</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="p">(</span><span class="n">R_market_event_window</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span> <span class="o">-</span> <span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="p">(((</span><span class="n">R_market_event_window</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">-</span> <span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">AR_t</span> <span class="o">=</span> <span class="n">AR</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span>
+    <span class="n">s_sq_AR</span> <span class="o">=</span> <span class="p">[</span><span class="n">calc_sigma_sq_AR_i</span><span class="p">(</span><span class="n">eps</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">M1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">events</span><span class="p">]</span>
+    <span class="n">S_AR_t</span> <span class="o">=</span> <span class="p">[(</span><span class="n">s_sq_AR</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span> <span class="mi">1</span><span class="o">/</span><span class="n">M1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">num</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">denom</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">events</span><span class="p">]</span>
+    <span class="n">SAR_t</span> <span class="o">=</span> <span class="n">AR_t</span> <span class="o">/</span> <span class="n">S_AR_t</span>
+    <span class="n">ASAR_t</span> <span class="o">=</span> <span class="n">SAR_t</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">S_ASAR_t</span> <span class="o">=</span> <span class="n">SAR_t</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">z_BMP_t</span> <span class="o">=</span> <span class="n">ASAR_t</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">S_ASAR_t</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">adjustment</span><span class="p">:</span>
+        <span class="n">stat</span> <span class="o">=</span> <span class="n">adjust</span><span class="p">(</span><span class="n">z_BMP_t</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stat</span> <span class="o">=</span> <span class="n">z_BMP_t</span>
+
+
+    <span class="c1"># find p-value for two-tailed test</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">stat</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span>  <span class="c1"># two-tailed test, so we multiply by 2</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">TestResults</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="adjBMP"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.adjBMP">[docs]</a><span class="k">def</span> <span class="nf">adjBMP</span><span class="p">(</span><span class="n">AR</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_estimation_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+           <span class="n">R_market_event_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">CAR_period</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">adjustment</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TestResults</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    adjusted BMP / standardized cross-sectional test as in the paper</span>
+<span class="sd">    &quot;Event study methodology under conditions of event induced variance&quot; by  Böhmer et al. (1991)</span>
+
+<span class="sd">    null hypothesis: E(CAAR) = 0</span>
+
+<span class="sd">    We have n events, L1 days in the estimation window, L2 days in the event window.</span>
+
+<span class="sd">    :param AR: abnormal returns, a n x L2 matrix</span>
+<span class="sd">    :param eps: residuals from the market model, a n x L1 matrix</span>
+<span class="sd">    :param R_market_estimation_window: returns of the market in the estimation window for each event, a n x L1 matrix</span>
+<span class="sd">    :param R_market_event_window: returns of the market in the event window for each even, a n x L2 matrix</span>
+<span class="sd">    :param event_day: day of the event, if day nr 21 is the event day, then event_day = 20</span>
+<span class="sd">    :param CAR_period: period of the event window we are observing. Careful for 41 days [0, 40] would represent the full</span>
+<span class="sd">    event window.</span>
+<span class="sd">    :param adjustment: whether the BMP (False) or the adjusted BMP (True) should be calculated.</span>
+<span class="sd">    In case of too many events, the cross correlation is estimated because of the runtime complexity of the calculation.</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="n">AR</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">AR</span> <span class="o">=</span> <span class="n">AR</span><span class="p">[:,</span> <span class="n">CAR_period</span><span class="p">[</span><span class="mi">0</span><span class="p">]:(</span><span class="n">CAR_period</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+    <span class="n">M1</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">R_market_estimation_window</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">M2</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">R_market_event_window</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">CAR</span> <span class="o">=</span> <span class="n">AR</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">s_sq_AR</span> <span class="o">=</span> <span class="p">[</span><span class="n">calc_sigma_sq_AR_i</span><span class="p">(</span><span class="n">eps</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">M1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">events</span><span class="p">]</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="p">((</span><span class="n">R_market_event_window</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">-</span> <span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="p">(((</span><span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">-</span> <span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">S_CAR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([(</span><span class="n">s_sq_AR</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">M2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">M2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">M1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">num</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">denom</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+
+    <span class="n">SCAR</span> <span class="o">=</span> <span class="n">CAR</span><span class="o">/</span><span class="n">S_CAR</span>
+    <span class="n">SCAR_bar</span> <span class="o">=</span> <span class="n">SCAR</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">S_CAR_bar</span> <span class="o">=</span> <span class="n">SCAR</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">z_BMP</span> <span class="o">=</span> <span class="n">N</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">SCAR_bar</span><span class="o">/</span><span class="n">S_CAR_bar</span>
+
+
+    <span class="k">if</span> <span class="n">adjustment</span><span class="p">:</span>
+        <span class="n">stat</span> <span class="o">=</span> <span class="n">adjust</span><span class="p">(</span><span class="n">z_BMP</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stat</span> <span class="o">=</span> <span class="n">z_BMP</span>
+
+
+    <span class="c1"># find p-value for two-tailed test</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">stat</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span>  <span class="c1"># two-tailed test, so we multiply by 2</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">TestResults</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<span class="c1">###################### GRANK TEST ############################</span>
+
+
+<div class="viewcode-block" id="calculate_GSAR"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.calculate_GSAR">[docs]</a><span class="k">def</span> <span class="nf">calculate_GSAR</span><span class="p">(</span><span class="n">SCAR</span><span class="p">,</span> <span class="n">SAR</span><span class="p">,</span> <span class="n">L1</span><span class="p">,</span> <span class="n">t_1</span><span class="p">,</span> <span class="n">tau</span><span class="p">):</span>
+    <span class="s2">&quot;repeat SCAR tau days and concatenate arrays&quot;</span>
+    <span class="n">GSAR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">SAR</span><span class="p">[:,</span> <span class="p">:</span><span class="n">L1</span> <span class="o">+</span> <span class="n">t_1</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="n">SCAR</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tau</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span><span class="n">SAR</span><span class="p">[:,</span> <span class="n">L1</span> <span class="o">+</span> <span class="n">t_1</span> <span class="o">+</span> <span class="n">tau</span><span class="p">:]],</span>
+                          <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">GSAR</span></div>
+
+
+<div class="viewcode-block" id="calculate_U"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.calculate_U">[docs]</a><span class="k">def</span> <span class="nf">calculate_U</span><span class="p">(</span><span class="n">GSAR_T_script</span><span class="p">,</span> <span class="n">M_T_script</span><span class="p">):</span>
+    <span class="s2">&quot;calculate ranks, divide by the number of valid days and then subtract 0.5. Should have mean 0.&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">rankdata</span><span class="p">(</span><span class="n">GSAR_T_script</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">M_T_script</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.5</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="calculate_grank_Z"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.calculate_grank_Z">[docs]</a><span class="k">def</span> <span class="nf">calculate_grank_Z</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">T_script</span><span class="p">):</span>
+    <span class="s2">&quot;calculate grank test statistic&quot;</span>
+    <span class="n">U_bar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">1</span> <span class="o">/</span> <span class="n">N</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">U</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span>
+                        <span class="n">T_script</span><span class="p">])</span>  <span class="c1"># TODO ASSUMING NO NANS FOR NOW, WITH NANS WE NEED LIKE A LIST AS U</span>
+    <span class="n">numerator</span> <span class="o">=</span> <span class="n">U_bar</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="n">U_bar</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># use norming factor of 1/N and not 1/(N-1) here like in the paper</span>
+    <span class="k">return</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span></div>
+
+
+<span class="c1"># implement generalised rank test</span>
+<div class="viewcode-block" id="grank"><a class="viewcode-back" href="../../eventstudystatistics.html#eventstudystatistics.statistical_tests.grank">[docs]</a><span class="k">def</span> <span class="nf">grank</span><span class="p">(</span><span class="n">AR</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_estimation_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">R_market_event_window</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+          <span class="n">CAR_period</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">adjust_cumulating_ind_prediction_errors</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TestResults</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the GRANK / generalized rank t test, as found in the paper &quot;Nonparametric rank tests for event studied&quot;</span>
+<span class="sd">    by Kolari and Pynnonen (2011). Optional adjustment as found in Mikkelson and Partch (1988) &quot;Withdrawn Security Offerings&quot;</span>
+
+<span class="sd">    null hypothesis: E(CAAR) = 0</span>
+
+
+<span class="sd">    We have n events, L1 days in the estimation window, L2 days in the event window.</span>
+
+<span class="sd">    :param AR: abnormal returns, a n x L2 matrix</span>
+<span class="sd">    :param eps: residuals from the market model, a n x L1 matrix</span>
+<span class="sd">    :param R_market_estimation_window: returns of the market in the estimation window for each event, a n x L1 matrix</span>
+<span class="sd">    :param R_market_event_window: returns of the market in the event window for each event, a n x L2 matrix</span>
+<span class="sd">    :param CAR_period: period of the event window we are observing. Careful for 41 days [0, 40] would represent the full</span>
+<span class="sd">    event window</span>
+<span class="sd">    :param adjust_cumulating_ind_prediction_errors: Whether to use adjustment factor suggested by Mikkelson and</span>
+<span class="sd">    Partch (1988), which makes no difference in this case, because we also calculate the SCAR_star, which is</span>
+<span class="sd">    standardised by the standard deviation of the SCAR, therefore the scalar adjustment factor does not change the result.</span>
+<span class="sd">    :return: test statistic and p-value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">M1</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">R_market_estimation_window</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">L1</span> <span class="o">=</span> <span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># TODO perhaps have to change this</span>
+    <span class="n">L2</span> <span class="o">=</span> <span class="n">R_market_event_window</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="n">AR</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">days</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">L1</span> <span class="o">+</span> <span class="n">L2</span><span class="p">)</span>
+
+    <span class="n">AR_estimation_and_event</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">eps</span><span class="p">,</span> <span class="n">AR</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">R_market</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">R_market_estimation_window</span><span class="p">,</span> <span class="n">R_market_event_window</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">s_sq_AR</span> <span class="o">=</span> <span class="p">[</span><span class="n">calc_sigma_sq_AR_i</span><span class="p">(</span><span class="n">eps</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">M1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">events</span><span class="p">]</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="p">(</span><span class="n">R_market</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">-</span> <span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="p">(((</span><span class="n">R_market_event_window</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">-</span> <span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">S_AR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[(</span><span class="n">s_sq_AR</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">M1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">num</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">/</span> <span class="n">denom</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">days</span><span class="p">]</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+    <span class="n">SAR</span> <span class="o">=</span> <span class="n">AR_estimation_and_event</span> <span class="o">/</span> <span class="n">S_AR</span>
+
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">CAR_period</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">CAR_period</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">AR_period</span> <span class="o">=</span> <span class="n">AR</span><span class="p">[:,</span> <span class="n">CAR_period</span><span class="p">[</span><span class="mi">0</span><span class="p">]:(</span><span class="n">CAR_period</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+    <span class="c1"># CAR_period = AR_period.cumsum(axis=1)</span>
+    <span class="c1"># CAR_tau = CAR_period[:,-1]</span>
+    <span class="n">CAR_tau</span> <span class="o">=</span> <span class="n">AR_period</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">adjust_cumulating_ind_prediction_errors</span><span class="p">:</span>
+        <span class="n">adjustment_factor</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">L1</span> <span class="o">+</span> <span class="n">L2</span> <span class="o">+</span> <span class="n">L2</span> <span class="o">/</span> <span class="n">L1</span> <span class="o">+</span> <span class="p">((</span><span class="n">R_market_event_window</span> <span class="o">-</span> <span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="n">R_market_estimation_window</span> <span class="o">-</span> <span class="n">R_market_estimation_window</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">adjustment_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>  <span class="c1"># no adjustment</span>
+
+    <span class="n">SCAR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">CAR_tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">s_sq_AR</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">adjustment_factor</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+    <span class="n">SCAR_star</span> <span class="o">=</span> <span class="n">SCAR</span> <span class="o">/</span> <span class="n">SCAR</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># for us T_script is the estimation window + the first day of the CAR period</span>
+    <span class="n">T_script</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">L1</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span> <span class="n">L1</span> <span class="o">+</span> <span class="n">CAR_period</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">GSAR</span> <span class="o">=</span> <span class="n">calculate_GSAR</span><span class="p">(</span><span class="n">SCAR_star</span><span class="p">,</span> <span class="n">SAR</span><span class="p">,</span> <span class="n">L1</span><span class="p">,</span> <span class="n">CAR_period</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tau</span><span class="p">)</span>
+
+    <span class="n">M_T_script</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">GSAR</span><span class="p">[:,</span> <span class="n">T_script</span><span class="p">]))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">N_T_script</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">GSAR</span><span class="p">[:,</span> <span class="n">T_script</span><span class="p">]))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># just called N in the paper</span>
+    <span class="n">T_script_zero</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">T_script</span><span class="p">))</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">calculate_U</span><span class="p">(</span><span class="n">GSAR</span><span class="p">[:,</span> <span class="n">T_script</span><span class="p">],</span> <span class="n">M_T_script</span><span class="p">)</span>
+
+    <span class="n">grank_Z</span> <span class="o">=</span> <span class="n">calculate_grank_Z</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">N_T_script</span><span class="p">,</span> <span class="n">T_script_zero</span><span class="p">)</span>
+    <span class="n">grank_t</span> <span class="o">=</span> <span class="n">grank_Z</span> <span class="o">*</span> <span class="p">((</span><span class="n">L1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">L1</span> <span class="o">-</span> <span class="n">grank_Z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">pvalue</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">grank_t</span><span class="p">),</span> <span class="n">L1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>  <span class="c1"># two-tailed test, so we multiply by 2</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">TestResults</span><span class="p">(</span><span class="n">grank_t</span><span class="p">,</span> <span class="n">pvalue</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">EventStudyStatistics</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">eventstudystatistics</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Thomas Niedermayer.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

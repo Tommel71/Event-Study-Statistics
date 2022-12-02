@@ -16,8 +16,9 @@
 import os
 import sys
 
-
-sys.path.insert(0, os.path.abspath('..'))
+addedpath = os.path.dirname(os.path.abspath('.'))
+print(addedpath)
+sys.path.insert(0, addedpath)
 
 
 
