@@ -11,11 +11,3 @@ eventstudystatistics.statistical\_tests module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: eventstudystatistics
-   :members:
-   :undoc-members:
-   :show-inheritance:

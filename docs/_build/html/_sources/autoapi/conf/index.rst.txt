@@ -28,7 +28,7 @@ Module Contents
    
 
 .. py:data:: extensions
-   :annotation: = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+   :annotation: = []
 
    
 
