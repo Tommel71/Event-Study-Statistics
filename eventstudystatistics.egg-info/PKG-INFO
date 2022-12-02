@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: eventstudystatistics
+Version: 1.0.0
+Summary: statistics for event studies
+Home-page: https://github.com/Tommel71/event-study-statistics
+Author: Tommel
+License: MIT
+License-File: LICENSE.txt

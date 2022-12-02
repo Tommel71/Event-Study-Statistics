@@ -1,3 +1,1 @@
-global-include *.xlsx
-global-include *.json
 global-include requirements.txt

@@ -1,7 +1,6 @@
 import pickle
-from scipy.stats import t
+from scipy.stats import t, norm
 import matplotlib.pyplot as plt
-from scipy.stats import norm
 import numpy as np
 from eventstudystatistics import adjBMP, adjBMP_daily, grank
 

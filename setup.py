@@ -6,7 +6,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="eventstudystatistics",
-    version="1.0.2",
+    version="1.0.0",
     description="statistics for event studies",
     license='MIT',
     author="Tommel",

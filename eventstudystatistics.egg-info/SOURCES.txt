@@ -1,0 +1,13 @@
+LICENSE.txt
+MANIFEST.in
+README.md
+requirements.txt
+setup.py
+eventstudystatistics/__init__.py
+eventstudystatistics/statistical_tests.py
+eventstudystatistics.egg-info/PKG-INFO
+eventstudystatistics.egg-info/SOURCES.txt
+eventstudystatistics.egg-info/dependency_links.txt
+eventstudystatistics.egg-info/not-zip-safe
+eventstudystatistics.egg-info/requires.txt
+eventstudystatistics.egg-info/top_level.txt
